@@ -1,0 +1,114 @@
+---
+title: "Data visualization"
+author: "Michelle Lam"
+date: "2022-08-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(here)
+library(janitor)
+
+library(patchwork)
+library(ggrepel)
+library(gghighlight)
+library(paletteer)
+library(ggExtra)
+library(ggbeeswarm)
+
+library(gapminder)
+
+#library(sf)
+```
+
+### Read in lizard data
+
+```{r}
+lizards <- read_csv(here("data_tidy", "lizards.csv"))
+```
+
+```{r}
+ggplot(data = lizards) +
+  geom_point(aes(x = total_length, y = weight))
+```
+
+Create a histogram of total lengths for all lizards in the dataset.
+```{r}
+plot_1 <- ggplot(data = lizards, aes(x = total_length)) +
+  geom_histogram(color = "orange",
+                 fill = "purple",
+                 size = 0.3, 
+                 linetype = "dotted")
+
+plot_1
+# use aes when you want to map an aesthetic onto a variable
+# if you refer to a constant within aes it will show up in the legend. constants should not be within aes
+```
+
+```{r}
+ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point(
+    shape = 22,
+    color = "cyan4", 
+    fill = "yellow",
+    size = 4,
+    alpha = 0.4
+  )
+```
+
+```{r}
+ggplot(data = lizards, 
+       aes(x = total_length, y = weight)) +
+  geom_point(
+    aes(color = common_name, 
+        size = total_length),
+    alpha = 0.5) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point() +
+  facet_wrap(~common_name, scales = "free")
+
+# R automtaically scales so they all have the same x and y axis differences, to change the scale use scales = free
+```
+
+```{r}
+lizard_counts <- lizards |> 
+  group_by(common_name) |> 
+  summarize(
+    counts = n()
+  )
+# n counts number of rows by group, if you want to add multiple columns in grouped variable use group_by and summarize
+
+lizard_counts <- lizards |> 
+  count(common_name)
+```
+
+```{r}
+ggplot(data = lizard_counts, 
+       aes(y = fct_reorder(common_name, n), 
+           x = n)) +
+  geom_col()
+# default for character variable is to plot in alphabetical order. can't specify order of a character, can specify order of a factor
+# fct_reorder allows you to reorder the common_name by the n variable
+```
+
+Create scatterplots, faceted by species, for total length versus weight. The color and shape of points should differ based on the species (common name). Change the theme. Make each facted panel have flexible axis limits (scales should be free).
+```{r}
+ggplot(data = lizards, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = common_name,
+                 shape = common_name),
+             alpha = 0.6, size = 2) +
+  theme_minimal() +
+  facet_wrap(~common_name, scales = "free") +
+  labs(x = "Total length (mm)", 
+       y = "Weight (grams)",
+       title = "Jornada Basin lizard sizes",
+       subtitle = "All lizards follow the standard length-weight relationship, with Western Whiptails being largest",
+       caption = "Data: Jornada Basin LTER, CCBY")
+```
+
