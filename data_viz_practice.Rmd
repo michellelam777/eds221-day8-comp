@@ -222,3 +222,55 @@ ggplot() +
   scale_fill_paletteer_d(palette = "ggthemes::manyeys")
 ```
 
+### Make a heatmap
+```{r}
+lizard_counts <- lizards |> 
+  mutate(date = lubridate::mdy(date)) |> 
+  count(year = lubridate::year(date), common_name) |> 
+  drop_na()
+```
+
+```{r}
+ggplot(data = lizard_counts, aes(x = year, y = common_name)) +
+  geom_tile(aes(fill = n), show.legend = FALSE) +
+  geom_text(aes(label = n), color = "white", size = 3) +
+  scale_fill_gradientn(colors = c("navy", "red", "orange")) +
+  theme_minimal()
+```
+
+### Beeswarm plot
+
+```{r}
+whiptails <- lizards |> 
+  filter(common_name == "western whiptail") |> 
+  drop_na(total_length, weight)
+```
+
+```{r}
+# beeswarm shows each observation value, more accurate than jitterplot, gives idea of distribution
+# if you have a huge sample size, beeswarm is not the best option
+whiptail_bee <- ggplot(data = whiptails, aes(x = sex, y = weight)) +
+  geom_beeswarm(size = 0.5) +
+  geom_boxplot(fill = NA)
+```
+
+### Marginal plot
+- Starting from whiptails, plot total length (x-axis) versus weight (y-axis), with point color dependent on sex
+```{r}
+# plot one or more variables and on the margin of the graph have a graphical representation 
+whiptail_plot <- ggplot(data = whiptails, aes(x = total_length, y = weight)) +
+  geom_point(aes(color = sex)) +
+  theme(legend.position = "bottom")
+
+ggMarginal(whiptail_plot, type = "boxplot", groupColour = TRUE)
+```
+
+### Patchwork:
+
+```{r}
+# + will make columns, / will make rows
+# plot graphs side by side
+((whiptail_bee + whiptail_plot) / whiptail_bee) & theme_dark()
+```
+
+
