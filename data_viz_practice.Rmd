@@ -271,6 +271,7 @@ ggMarginal(whiptail_plot, type = "boxplot", groupColour = TRUE)
 # + will make columns, / will make rows
 # plot graphs side by side
 ((whiptail_bee + whiptail_plot) / whiptail_bee) & theme_dark()
+
 ```
 
 
